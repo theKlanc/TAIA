@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TAIA", "TAIA\TAIA.vcxproj", "{C6CA1137-131A-42B5-BCC1-719F27470669}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C6CA1137-131A-42B5-BCC1-719F27470669}.Debug|x64.ActiveCfg = Debug|x64
+		{C6CA1137-131A-42B5-BCC1-719F27470669}.Debug|x64.Build.0 = Debug|x64
+		{C6CA1137-131A-42B5-BCC1-719F27470669}.Debug|x86.ActiveCfg = Debug|Win32
+		{C6CA1137-131A-42B5-BCC1-719F27470669}.Debug|x86.Build.0 = Debug|Win32
+		{C6CA1137-131A-42B5-BCC1-719F27470669}.Release|x64.ActiveCfg = Release|x64
+		{C6CA1137-131A-42B5-BCC1-719F27470669}.Release|x64.Build.0 = Release|x64
+		{C6CA1137-131A-42B5-BCC1-719F27470669}.Release|x86.ActiveCfg = Release|Win32
+		{C6CA1137-131A-42B5-BCC1-719F27470669}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {23871144-37F5-4DDC-86E1-BBF024DCE50D}
+	EndGlobalSection
+EndGlobal
