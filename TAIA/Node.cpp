@@ -16,9 +16,9 @@ Node::Node(long posX, long posY)
 	_shape->setPosition(posX-2, posY-2);
 	_posX = posX;
 	_posY = posY;
-	int r = rand() % 255;
-	int g = rand() % 255;
-	int b = rand() % 255;
+	int r =0;
+	int g =0;
+	int b =255;
 	_shape->setFillColor(sf::Color(r, g, b));
 	_poblacio = 2;
 	_interes = 0;
@@ -41,7 +41,6 @@ long Node::getUUID()
 
 double Node::getDistance(int posX, int posY)
 {
-	std::cout << sqrt(pow((posX - _posX), 2) + pow((posY - _posY), 2));
 	return sqrt(pow((posX - _posX), 2) + pow((posY - _posY), 2));
 }
 
@@ -71,9 +70,9 @@ void Node::unserialize(std::string entrada)
 
 	_shape = new sf::CircleShape(4.f);
 	_shape->setPosition(_posX - 2, _posY - 2);
-	int r = rand() % 255;
-	int g = rand() % 255;
-	int b = rand() % 255;
+	int r =0;
+	int g =0;
+	int b =255;
 	_shape->setFillColor(sf::Color(r, g, b));
 }
 

@@ -9,22 +9,31 @@ Aresta::Aresta()
 
 Aresta::Aresta(Node n1, Node n2)
 {
-	_n1 = n1;
-	_n2 = n2;
-	_length = n1.getDistance(n2.getPos().first, n2.getPos().second);
+	if (n1.getUUID() == n2.getUUID()) {
+		throw "LMAO";
+	}
+	if (n1.getUUID() < n2.getUUID()) {
+		_n1 = n1;
+		_n2 = n2;
+	}
+	else {
+		_n1 = n2;
+		_n2 = n1;
+	}
+	_length = _n1.getDistance(_n2.getPos().first, _n2.getPos().second);
 	_shape = new sf::RectangleShape(sf::Vector2f(_length, 3.f));
-	_shape->setPosition(n1.getPos().first+2, n1.getPos().second+2);
+	_shape->setPosition(_n1.getPos().first+2, _n1.getPos().second+2);
 
-	double delta_x = n2.getPos().first - n1.getPos().first;
-	double delta_y = n2.getPos().second - n1.getPos().second;
+	double delta_x = _n2.getPos().first - _n1.getPos().first;
+	double delta_y = _n2.getPos().second - _n1.getPos().second;
 	double theta_radians = atan2(delta_y, delta_x);
 	_shape->setRotation(theta_radians * 180 / 3.1415926535f);
 
 
 
-	int r = rand() % 255;
-	int g = rand() % 255;
-	int b = rand() % 255;
+	int r =0;
+	int g =0;
+	int b =0;
 	_shape->setFillColor(sf::Color(r, g, b));
 }
 
@@ -56,9 +65,22 @@ void Aresta::unserialize(std::string entrada, std::map<long,Node> vNodes)
 		}
 	}
 	ss >> tempI;
+	bool swop = false;
+	if (tempI == _n1.getUUID()) {
+		throw std::exception("RIPEO");
+	}
+	if (tempI < _n1.getUUID()) {
+		_n2 = _n1;
+		swop = true;
+	}
 	for (auto&[uuid, n] : vNodes) {
 		if (n.getUUID() == tempI) {
-			_n2 = n;
+			if (swop) {
+				_n1 = n;
+			}
+			else {
+				_n2 = n;
+			}
 			break;
 		}
 	}
@@ -73,9 +95,9 @@ void Aresta::unserialize(std::string entrada, std::map<long,Node> vNodes)
 
 
 
-	int r = rand() % 255;
-	int g = rand() % 255;
-	int b = rand() % 255;
+	int r =0;
+	int g =0;
+	int b =0;
 	_shape->setFillColor(sf::Color(r, g, b));
 }
 
