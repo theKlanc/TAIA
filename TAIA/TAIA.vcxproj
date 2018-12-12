@@ -157,7 +157,6 @@
   <ItemGroup>
     <ClInclude Include="Aresta.hpp" />
     <ClInclude Include="Node.hpp" />
-    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Aresta.cpp" />

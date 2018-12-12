@@ -5,12 +5,10 @@
 
 Aresta::Aresta()
 {
-	_UUID = rand();
 }
 
 Aresta::Aresta(Node n1, Node n2)
 {
-	_UUID = rand();
 	_n1 = n1;
 	_n2 = n2;
 	_length = n1.getDistance(n2.getPos().first, n2.getPos().second);
@@ -40,31 +38,25 @@ sf::RectangleShape Aresta::getShape()
 	return *_shape;
 }
 
-long Aresta::getUUID()
-{
-	return _UUID;
-}
 
 std::string Aresta::serialize()
 {
-	return std::to_string(_UUID) + " " + std::to_string(_n1.getUUID()) + " " + std::to_string(_n2.getUUID()) + " " + std::to_string(_length);
+	return std::to_string(_n1.getUUID()) + " " + std::to_string(_n2.getUUID()) + " " + std::to_string(_length);
 }
 
-void Aresta::unserialize(std::string entrada, std::vector<Node> vNodes)
+void Aresta::unserialize(std::string entrada, std::map<long,Node> vNodes)
 {
 	std::stringstream ss(entrada);
 	int tempI;
 	ss >> tempI;
-	_UUID = tempI;
-	ss >> tempI;
-	for (Node n : vNodes) {
+	for (auto&[uuid, n] : vNodes) {
 		if (n.getUUID() == tempI) {
 			_n1 = n;
 			break;
 		}
 	}
 	ss >> tempI;
-	for (Node n : vNodes) {
+	for (auto&[uuid, n] : vNodes) {
 		if (n.getUUID() == tempI) {
 			_n2 = n;
 			break;
