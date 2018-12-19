@@ -10,16 +10,18 @@ public:
 	double getFitness();
 	void mutate();
 	Solucio fug(Solucio grill);
-
+	bool operator<(Solucio& l);
 
 	static void setup(std::map<long, Node>*n,std::vector<Aresta>*a,int d);
 
 private:
 
 	int _dist=0;
+	bool dirtyFlag = true;
+	double fitness;
 	std::vector<bool> _hiHaCarril;
-	std::pair<int,int> getShortestPath(int uuid1, int uuid2);
-	std::vector<Aresta*> getPathsFromNode(int uuid);
+	std::pair<int,int> getShortestPath(long uuid1, long uuid2);
+	std::vector<Aresta*> getPathsFromNode(long uuid);
 
 	//static std::vector<std::vector<bool>> _pathsFacils;
 

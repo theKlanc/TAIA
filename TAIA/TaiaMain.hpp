@@ -5,6 +5,7 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
+#include "Solucio.h"
 
 class TaiaMain
 {
@@ -16,6 +17,8 @@ private:
 	std::string _nomMapa;
 	std::map<long, Node> _nodes;
 	std::vector<Aresta> _arestes;
+
+	std::vector<Solucio> _solutions;
 
 
 	sf::RenderWindow *_window;
@@ -36,7 +39,7 @@ private:
 	int _interes = 0;
 	int _poblacio = 0;
 
-	const int MAX_SOLUTIONS=500;
+	const int MAX_SOLUTIONS=40;
 
 	void initSolutions();
 
@@ -45,4 +48,8 @@ private:
 	void draw();
 	void unserialize();
 	void serialize();
+
+	void mutate();
+	void fug();
+	void darwin();
 };

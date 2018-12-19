@@ -75,10 +75,18 @@ void TaiaMain::initSolutions()
 		dist+=t.getLength();
 	}
 	Solucio::setup(&_nodes,&_arestes,dist);
+	for(int i = 0;i<MAX_SOLUTIONS;++i)
+	{
+		_solutions.push_back(Solucio());
+	}
 }
 
 void TaiaMain::runGeneration()
 {
+	mutate();
+	fug();
+	darwin();
+	std::cout << "finished Gen" << std::endl;
 }
 
 void TaiaMain::dealWithEvent()
@@ -98,34 +106,34 @@ void TaiaMain::dealWithEvent()
 				if (!_buildingEdge)
 				{
 					double minima = DBL_MAX;
-					Node nodeMin;
+					Node *nodeMin=nullptr;
 					for (auto&[uuid, n] : _nodes)
 					{
 						double dist = n.getDistance(_event.mouseButton.x, _event.mouseButton.y);
 						if (dist <= minima)
 						{
 							minima = dist;
-							nodeMin = n;
+							nodeMin = &n;
 						}
 					}
-					_origin = new Node(nodeMin);
+					_origin = nodeMin;
 				}
 				else
 				{
 					double minima = DBL_MAX;
-					Node nodeMin;
+					Node *nodeMin=nullptr;
 					for (auto&[uuid, n] : _nodes)
 					{
 						double dist = n.getDistance(_event.mouseButton.x, _event.mouseButton.y);
 						if (dist <= minima)
 						{
 							minima = dist;
-							nodeMin = n;
+							nodeMin = &n;
 						}
 					}
-					Aresta temp(*_origin, *new Node(nodeMin));
+					Aresta temp(_origin, nodeMin);
 					_arestes.push_back(temp);
-					Aresta temp2(*new Node(nodeMin),*_origin);
+					Aresta temp2(nodeMin,_origin);
 					_arestes.push_back(temp2);
 					_origin = nullptr;
 				}
@@ -146,14 +154,7 @@ void TaiaMain::dealWithEvent()
 					}
 				}
 				long uuid = nodeMin.getUUID();
-				for (auto n = _nodes.begin(); n != _nodes.end(); n++)
-				{
-					if (n->second.getUUID() == uuid)
-					{
-						_nodes.erase(n->first);
-						break;
-					}
-				}
+
 				bool clean = true;
 				do {
 					clean = true;
@@ -166,6 +167,14 @@ void TaiaMain::dealWithEvent()
 						}
 					}
 				} while (!clean);
+				for (auto&[uuid2, n] : _nodes)
+				{
+					if (n.getUUID() == uuid)
+					{
+						_nodes.erase(uuid);
+						break;
+					}
+				}
 			}
 		}
 		else
@@ -184,11 +193,11 @@ void TaiaMain::dealWithEvent()
 					}
 				}
 				long uuid = nodeMin.getUUID();
-				for (auto n = _nodes.begin(); n != _nodes.end(); n++)
+				for (auto&[uuid2, n] : _nodes)
 				{
-					if (n->second.getUUID() == uuid)
+					if (n.getUUID() == uuid)
 					{
-						n->second.setInteres(_interes);
+						n.setInteres(_interes);
 						break;
 					}
 				}
@@ -207,11 +216,11 @@ void TaiaMain::dealWithEvent()
 					}
 				}
 				long uuid = nodeMin.getUUID();
-				for (auto n = _nodes.begin(); n != _nodes.end(); n++)
+				for (auto&[uuid2, n] : _nodes)
 				{
-					if (n->second.getUUID() == uuid)
+					if (n.getUUID() == uuid)
 					{
-						n->second.setPoblacio(_poblacio);
+						n.setPoblacio(_poblacio);
 						break;
 					}
 				}
@@ -289,7 +298,7 @@ void TaiaMain::unserialize()
 			tempFinal += temp + " ";
 			Aresta novaAresta;
 			try {
-				novaAresta.unserialize(tempFinal, _nodes);
+				novaAresta.unserialize(tempFinal, &_nodes);
 			}catch(std::exception e)
 			{
 				continue;
@@ -313,4 +322,21 @@ void TaiaMain::serialize()
 		sortidaArestes << a.serialize() << std::endl;
 	}
 	sortidaArestes.close();
+}
+
+void TaiaMain::mutate()
+{
+}
+
+void TaiaMain::fug()
+{
+}
+
+void TaiaMain::darwin()
+{
+	std::sort(_solutions.begin(),_solutions.end());
+	for(int i = _solutions.size();i > MAX_SOLUTIONS;)
+	{
+		_solutions.pop_back();
+	}
 }

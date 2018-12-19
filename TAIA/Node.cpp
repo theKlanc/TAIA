@@ -16,9 +16,9 @@ Node::Node(long posX, long posY)
 	_shape->setPosition(posX-2, posY-2);
 	_posX = posX;
 	_posY = posY;
-	int r =0;
+	int r =255;
 	int g =0;
-	int b =255;
+	int b =0;
 	_shape->setFillColor(sf::Color(r, g, b));
 	_poblacio = 2;
 	_interes = 0;
