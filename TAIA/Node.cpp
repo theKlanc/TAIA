@@ -79,10 +79,16 @@ void Node::unserialize(std::string entrada)
 void Node::setPoblacio(int p)
 {
 	_poblacio = p;
+	_shape->setFillColor(sf::Color(0, (double)p*2.55f, 0));
 }
 
 void Node::setInteres(int i)
 {
 	_interes = i;
+	_shape->setFillColor(sf::Color((double)i*2.55f, 0, 0));
+}
+
+int Node::getInteres()
+{return _interes;
 }
 

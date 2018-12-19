@@ -13,22 +13,32 @@ public:
 	~TaiaMain();
 	void loop();
 private:
-	std::string nomMapa;
-	std::map<long, Node> nodes;
-	std::vector<Aresta> arestes;
+	std::string _nomMapa;
+	std::map<long, Node> _nodes;
+	std::vector<Aresta> _arestes;
 
 
-	sf::RenderWindow *window;
-	sf::Event event;
+	sf::RenderWindow *_window;
+	sf::Event _event;
 
-	sf::Sprite sprite;
-	sf::Texture texture;
+	sf::Sprite _sprite;
+	sf::Texture _texture;
 
-	Node *origin = nullptr;
+	Node *_origin = nullptr;
 
-	bool buildingEdge = false;
-	bool optimizing = false;
-	bool drawBG = true;
+	bool _everOptimized=false;
+	bool _buildingEdge = false;
+	bool _optimizing = false;
+	bool _drawBG = true;
+	bool _paintingPob = false;
+	bool _paintingInt = false; 
+
+	int _interes = 0;
+	int _poblacio = 0;
+
+	const int MAX_SOLUTIONS=500;
+
+	void initSolutions();
 
 	void runGeneration();
 	void dealWithEvent();

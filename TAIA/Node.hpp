@@ -16,6 +16,7 @@ public:
 	void unserialize(std::string);
 	void setPoblacio(int p);
 	void setInteres(int i);
+	int getInteres();
 private:
 	long _UUID;
 	int _posX, _posY;

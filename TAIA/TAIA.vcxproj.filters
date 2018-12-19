@@ -24,6 +24,9 @@
     <ClInclude Include="TaiaMain.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Solucio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TAIA.cpp">
@@ -36,6 +39,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TaiaMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Solucio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

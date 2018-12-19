@@ -101,6 +101,11 @@ void Aresta::unserialize(std::string entrada, std::map<long,Node> vNodes)
 	_shape->setFillColor(sf::Color(r, g, b));
 }
 
+int Aresta::getLength()
+{
+	return _length;
+}
+
 bool Aresta::containsNodeWithUUID(long uuid) {
 	return uuid == _n1.getUUID() || uuid == _n2.getUUID();
 }

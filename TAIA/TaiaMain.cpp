@@ -7,27 +7,28 @@
 #include <iostream>
 #include <execution>
 #include <fstream>
-
+#include "Solucio.h"
 
 
 TaiaMain::TaiaMain()
 {
 	srand(time(NULL));
 	std::cout << "Entra un nom pel mapa: " << std::endl;
-	std::cin >> nomMapa;
+	std::cin >> _nomMapa;
 
 #pragma region Textura mapa
-	if (!texture.loadFromFile(nomMapa + ".jpg"))
+	if (!_texture.loadFromFile(_nomMapa + ".jpg"))
 	{
-		if(!texture.loadFromFile(nomMapa + ".png"))
+		if(!_texture.loadFromFile(_nomMapa + ".png"))
 		{
 			throw std::exception("fug");
 		}
 	}
-	sprite.setTexture(texture);
+	_sprite.setTexture(_texture);
 #pragma endregion
 	unserialize();
-	window = new sf::RenderWindow(sf::VideoMode(texture.getSize().x, texture.getSize().y), nomMapa);
+	_window = new sf::RenderWindow(sf::VideoMode(_texture.getSize().x, _texture.getSize().y), _nomMapa);
+	int distTotal=0;
 }
 
 
@@ -38,32 +39,42 @@ TaiaMain::~TaiaMain()
 
 void TaiaMain::draw()
 {
-	window->clear(sf::Color::White);
-	if(drawBG)window->draw(sprite);
-	for (Aresta a : arestes)
+	_window->clear(sf::Color::White);
+	if(_drawBG)_window->draw(_sprite);
+	for (Aresta a : _arestes)
 	{
-		window->draw(a.getShape());
+		_window->draw(a.getShape());
 	}
-	for (auto&[uuid, n] : nodes)
+	for (auto&[uuid, n] : _nodes)
 	{
-		window->draw(n.getShape());
+		_window->draw(n.getShape());
 	}
-	window->display();
+	_window->display();
 }
 void TaiaMain::loop()
 {
-	while (window->isOpen())
+	while (_window->isOpen())
 	{
-		while (window->pollEvent(event))
+		while (_window->pollEvent(_event))
 		{
 			dealWithEvent();
 		}
-		if(optimizing)
+		if(_optimizing)
 		{
 			runGeneration();
 		}
 		draw();
 	}
+}
+
+void TaiaMain::initSolutions()
+{
+	int dist=0;
+	for(auto t : _arestes)
+	{
+		dist+=t.getLength();
+	}
+	Solucio::setup(&_nodes,&_arestes,dist);
 }
 
 void TaiaMain::runGeneration()
@@ -72,137 +83,179 @@ void TaiaMain::runGeneration()
 
 void TaiaMain::dealWithEvent()
 {
-	if (event.type == sf::Event::Closed)
-		window->close();
-	if (event.type == sf::Event::MouseButtonPressed)
+	if (_event.type == sf::Event::Closed)
+		_window->close();
+	if (_event.type == sf::Event::MouseButtonPressed)
 	{
-		if (event.mouseButton.button == sf::Mouse::Left)
-		{
-			Node temp(event.mouseButton.x, event.mouseButton.y);
-			nodes.insert(std::make_pair(temp.getUUID(), temp));
-		}
-		if (event.mouseButton.button == sf::Mouse::Right)
-		{
-			if (!buildingEdge)
+		if (!_paintingInt && !_paintingPob) {
+			if (_event.mouseButton.button == sf::Mouse::Left)
 			{
+				Node temp(_event.mouseButton.x, _event.mouseButton.y);
+				_nodes.insert(std::make_pair(temp.getUUID(), temp));
+			}
+			if (_event.mouseButton.button == sf::Mouse::Right)
+			{
+				if (!_buildingEdge)
+				{
+					double minima = DBL_MAX;
+					Node nodeMin;
+					for (auto&[uuid, n] : _nodes)
+					{
+						double dist = n.getDistance(_event.mouseButton.x, _event.mouseButton.y);
+						if (dist <= minima)
+						{
+							minima = dist;
+							nodeMin = n;
+						}
+					}
+					_origin = new Node(nodeMin);
+				}
+				else
+				{
+					double minima = DBL_MAX;
+					Node nodeMin;
+					for (auto&[uuid, n] : _nodes)
+					{
+						double dist = n.getDistance(_event.mouseButton.x, _event.mouseButton.y);
+						if (dist <= minima)
+						{
+							minima = dist;
+							nodeMin = n;
+						}
+					}
+					Aresta temp(*_origin, *new Node(nodeMin));
+					_arestes.push_back(temp);
+					Aresta temp2(*new Node(nodeMin),*_origin);
+					_arestes.push_back(temp2);
+					_origin = nullptr;
+				}
+				_buildingEdge = !_buildingEdge;
+			}
+			if (_event.mouseButton.button == sf::Mouse::Middle)
+			{
+				_buildingEdge = false;
 				double minima = DBL_MAX;
 				Node nodeMin;
-				for (auto&[uuid, n] : nodes)
+				for (auto&[uuid, n] : _nodes)
 				{
-					double dist = n.getDistance(event.mouseButton.x, event.mouseButton.y);
+					double dist = n.getDistance(_event.mouseButton.x, _event.mouseButton.y);
 					if (dist <= minima)
 					{
 						minima = dist;
 						nodeMin = n;
 					}
 				}
-				origin = new Node(nodeMin);
-			}
-			else
-			{
-				double minima = DBL_MAX;
-				Node nodeMin;
-				for (auto&[uuid, n] : nodes)
+				long uuid = nodeMin.getUUID();
+				for (auto n = _nodes.begin(); n != _nodes.end(); n++)
 				{
-					double dist = n.getDistance(event.mouseButton.x, event.mouseButton.y);
-					if (dist <= minima)
+					if (n->second.getUUID() == uuid)
 					{
-						minima = dist;
-						nodeMin = n;
-					}
-				}
-				Aresta temp(*origin, *new Node(nodeMin));
-				arestes.push_back(temp);
-				origin = nullptr;
-			}
-			buildingEdge = !buildingEdge;
-		}
-		if (event.mouseButton.button == sf::Mouse::Middle)
-		{
-			buildingEdge = false;
-			double minima = DBL_MAX;
-			Node nodeMin;
-			for (auto&[uuid, n] : nodes)
-			{
-				double dist = n.getDistance(event.mouseButton.x, event.mouseButton.y);
-				if (dist <= minima)
-				{
-					minima = dist;
-					nodeMin = n;
-				}
-			}
-			long uuid = nodeMin.getUUID();
-			for (auto n = nodes.begin(); n != nodes.end(); n++)
-			{
-				if (n->second.getUUID() == uuid)
-				{
-					nodes.erase(n->first);
-					break;
-				}
-			}
-			bool clean = true;
-			do {
-				clean = true;
-				for (auto n = arestes.begin(); n != arestes.end(); n++)
-				{
-					if (n->containsNodeWithUUID(uuid)) {
-						clean = false;
-						arestes.erase(n);
+						_nodes.erase(n->first);
 						break;
 					}
 				}
-			} while (!clean);
+				bool clean = true;
+				do {
+					clean = true;
+					for (auto n = _arestes.begin(); n != _arestes.end(); n++)
+					{
+						if (n->containsNodeWithUUID(uuid)) {
+							clean = false;
+							_arestes.erase(n);
+							break;
+						}
+					}
+				} while (!clean);
+			}
+		}
+		else
+		{
+			if(_paintingInt)
+			{
+				double minima = DBL_MAX;
+				Node nodeMin;
+				for (auto&[uuid, n] : _nodes)
+				{
+					double dist = n.getDistance(_event.mouseButton.x, _event.mouseButton.y);
+					if (dist <= minima)
+					{
+						minima = dist;
+						nodeMin = n;
+					}
+				}
+				long uuid = nodeMin.getUUID();
+				for (auto n = _nodes.begin(); n != _nodes.end(); n++)
+				{
+					if (n->second.getUUID() == uuid)
+					{
+						n->second.setInteres(_interes);
+						break;
+					}
+				}
+			}
+			else if(_paintingPob)
+			{
+				double minima = DBL_MAX;
+				Node nodeMin;
+				for (auto&[uuid, n] : _nodes)
+				{
+					double dist = n.getDistance(_event.mouseButton.x, _event.mouseButton.y);
+					if (dist <= minima)
+					{
+						minima = dist;
+						nodeMin = n;
+					}
+				}
+				long uuid = nodeMin.getUUID();
+				for (auto n = _nodes.begin(); n != _nodes.end(); n++)
+				{
+					if (n->second.getUUID() == uuid)
+					{
+						n->second.setPoblacio(_poblacio);
+						break;
+					}
+				}
+			}
 		}
 	}
-	if (event.type == sf::Event::KeyPressed)
+	if (_event.type == sf::Event::KeyPressed)
 	{
-		if (event.key.code == sf::Keyboard::B)
-			drawBG = !drawBG;
-		if (event.key.code == sf::Keyboard::P) {
-			double minima = DBL_MAX;
-			Node nodeMin;
-			for (auto&[uuid, n] : nodes)
-			{
-				double dist = n.getDistance(event.mouseButton.x, event.mouseButton.y);
-				if (dist <= minima)
-				{
-					minima = dist;
-					nodeMin = n;
-				}
-
-			}
-			long uuid = nodeMin.getUUID();
-			int pob;
-			std::cout << "ENTRA LA POBLACIO: " << std::endl;
-			std::cin >> pob;
-			nodes[uuid].setPoblacio(pob);
+		if (_event.key.code == sf::Keyboard::Space)
+		{
+			if(!_everOptimized)
+				initSolutions();
+			_everOptimized=true;
+			_optimizing=!_optimizing;
 		}
-		if (event.key.code == sf::Keyboard::I) {
-			double minima = DBL_MAX;
-			Node nodeMin;
-			for (auto&[uuid, n] : nodes)
+		if (_event.key.code == sf::Keyboard::B)
+			_drawBG = !_drawBG;
+		if (_event.key.code == sf::Keyboard::P) {
+			if(!_paintingPob)
 			{
-				double dist = n.getDistance(event.mouseButton.x, event.mouseButton.y);
-				if (dist <= minima)
-				{
-					minima = dist;
-					nodeMin = n;
-				}
-
+				int pob;
+				std::cout << "ENTRA LA POBLACIO: " << std::endl;
+				std::cin >> pob;
+				_poblacio = pob;
 			}
-			long uuid = nodeMin.getUUID();
-			int interes;
-			std::cout << "ENTRA L INTERES: " << std::endl;
-			std::cin >> interes;
-			nodes[uuid].setInteres(interes);
+			_paintingPob = !_paintingPob;
+		}
+		if (_event.key.code == sf::Keyboard::I) {
+			if (!_paintingInt)
+			{
+				int lmao;
+				std::cout << "ENTRA L INTERES: " << std::endl;
+				std::cin >> lmao;
+				_interes = lmao;
+			}
+			_paintingInt = !_paintingInt;
 		}
 	}
 }
 
 void TaiaMain::unserialize()
 {
-	std::ifstream nodesStream("nodes_" + nomMapa + ".dat");
-	std::ifstream arestesStream("arestes_" + nomMapa + ".dat");
+	std::ifstream nodesStream("nodes_" + _nomMapa + ".dat");
+	std::ifstream arestesStream("arestes_" + _nomMapa + ".dat");
 	if (nodesStream.is_open()) {
 		while (!nodesStream.eof()) {
 			std::string temp;
@@ -220,7 +273,7 @@ void TaiaMain::unserialize()
 			tempFinal += temp + " ";
 			Node nouNode;
 			nouNode.unserialize(tempFinal);
-			nodes.insert(std::make_pair(nouNode.getUUID(), nouNode));
+			_nodes.insert(std::make_pair(nouNode.getUUID(), nouNode));
 		}
 	}
 	if (arestesStream.is_open()) {
@@ -236,26 +289,26 @@ void TaiaMain::unserialize()
 			tempFinal += temp + " ";
 			Aresta novaAresta;
 			try {
-				novaAresta.unserialize(tempFinal, nodes);
+				novaAresta.unserialize(tempFinal, _nodes);
 			}catch(std::exception e)
 			{
 				continue;
 			}
-			arestes.push_back(novaAresta);
+			_arestes.push_back(novaAresta);
 		}
 	}
 }
 
 void TaiaMain::serialize()
 {
-	std::ofstream sortidaArestes("arestes_" + nomMapa + ".dat");
-	std::ofstream sortidaNodes("nodes_" + nomMapa + ".dat");
-	for (auto&[uuid, n] : nodes)
+	std::ofstream sortidaArestes("arestes_" + _nomMapa + ".dat");
+	std::ofstream sortidaNodes("nodes_" + _nomMapa + ".dat");
+	for (auto&[uuid, n] : _nodes)
 	{
 		sortidaNodes << n.serialize() << std::endl;
 	}
 	sortidaNodes.close();
-	for (Aresta a : arestes)
+	for (Aresta a : _arestes)
 	{
 		sortidaArestes << a.serialize() << std::endl;
 	}

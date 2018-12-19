@@ -13,6 +13,7 @@ public:
 	bool containsNodeWithUUID(long uuid);
 	std::string serialize();
 	void unserialize(std::string temp,std::map<long,Node> vNodes);
+	int getLength();
 private:
 	Node _n1, _n2;
 	int _length;
