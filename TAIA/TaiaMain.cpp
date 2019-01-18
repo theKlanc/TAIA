@@ -9,6 +9,7 @@
 #include <fstream>
 #include "Solucio.h"
 
+const int GENERATIONS_PER_CYCLE = 1;
 
 TaiaMain::TaiaMain()
 {
@@ -19,7 +20,7 @@ TaiaMain::TaiaMain()
 #pragma region Textura mapa
 	if (!_texture.loadFromFile(_nomMapa + ".jpg"))
 	{
-		if(!_texture.loadFromFile(_nomMapa + ".png"))
+		if (!_texture.loadFromFile(_nomMapa + ".png"))
 		{
 			throw std::exception("fug");
 		}
@@ -28,7 +29,7 @@ TaiaMain::TaiaMain()
 #pragma endregion
 	unserialize();
 	_window = new sf::RenderWindow(sf::VideoMode(_texture.getSize().x, _texture.getSize().y), _nomMapa);
-	int distTotal=0;
+	int distTotal = 0;
 }
 
 
@@ -40,10 +41,25 @@ TaiaMain::~TaiaMain()
 void TaiaMain::draw()
 {
 	_window->clear(sf::Color::White);
-	if(_drawBG)_window->draw(_sprite);
-	for (Aresta a : _arestes)
+	if (_drawBG)_window->draw(_sprite);
+	std::vector<sf::RectangleShape> llistaTemp;
+	for (int i =0;i<_arestes.size();i++)
 	{
-		_window->draw(a.getShape());
+		auto temp=_arestes[i].getShape();
+		if(_everOptimized && _solutions[0].hiHaCarril(i))
+		{
+			int r =0;
+			int g =255;
+			int b =0;
+			temp.setFillColor(sf::Color(r, g, b));
+			llistaTemp.push_back(temp);
+			continue;
+		}
+		_window->draw(temp);
+	}
+	for(sf::RectangleShape& r : llistaTemp)
+	{
+		_window->draw(r);
 	}
 	for (auto&[uuid, n] : _nodes)
 	{
@@ -59,7 +75,7 @@ void TaiaMain::loop()
 		{
 			dealWithEvent();
 		}
-		if(_optimizing)
+		if (_optimizing)
 		{
 			runGeneration();
 		}
@@ -69,24 +85,31 @@ void TaiaMain::loop()
 
 void TaiaMain::initSolutions()
 {
-	int dist=0;
-	for(auto t : _arestes)
+	int dist = 0;
+	for (auto t : _arestes)
 	{
-		dist+=t.getLength();
+		dist += t.getLength();
 	}
-	Solucio::setup(&_nodes,&_arestes,dist);
-	for(int i = 0;i<MAX_SOLUTIONS;++i)
+	Solucio::setup(&_nodes, &_arestes, dist);
+	for (int i = 0; i < MAX_SOLUTIONS; ++i)
 	{
-		_solutions.push_back(Solucio());
+		Solucio temp = Solucio();
+		_solutions.push_back(temp);
+	}
+	for(Solucio& temp : _solutions)
+	{
+		temp.getFitness();
 	}
 }
 
 void TaiaMain::runGeneration()
 {
-	mutate();
-	fug();
-	darwin();
-	std::cout << "finished Gen" << std::endl;
+	for (int i = 0; i < GENERATIONS_PER_CYCLE; ++i) {
+		mutate();
+		fug();
+		darwin();
+		std::cout << "finished Gen, best fitness: "<< _solutions[0].getFitness() << " dist :"<< _solutions[0].getDist() <<" Max Dist: "<<_solutions[0].getMaxDist()<< " Ntrams: " <<_solutions[0].getNTrams()<<std::endl;
+	}
 }
 
 void TaiaMain::dealWithEvent()
@@ -106,7 +129,7 @@ void TaiaMain::dealWithEvent()
 				if (!_buildingEdge)
 				{
 					double minima = DBL_MAX;
-					Node *nodeMin=nullptr;
+					Node *nodeMin = nullptr;
 					for (auto&[uuid, n] : _nodes)
 					{
 						double dist = n.getDistance(_event.mouseButton.x, _event.mouseButton.y);
@@ -121,7 +144,7 @@ void TaiaMain::dealWithEvent()
 				else
 				{
 					double minima = DBL_MAX;
-					Node *nodeMin=nullptr;
+					Node *nodeMin = nullptr;
 					for (auto&[uuid, n] : _nodes)
 					{
 						double dist = n.getDistance(_event.mouseButton.x, _event.mouseButton.y);
@@ -133,7 +156,7 @@ void TaiaMain::dealWithEvent()
 					}
 					Aresta temp(_origin, nodeMin);
 					_arestes.push_back(temp);
-					Aresta temp2(nodeMin,_origin);
+					Aresta temp2(nodeMin, _origin);
 					_arestes.push_back(temp2);
 					_origin = nullptr;
 				}
@@ -179,7 +202,7 @@ void TaiaMain::dealWithEvent()
 		}
 		else
 		{
-			if(_paintingInt)
+			if (_paintingInt)
 			{
 				double minima = DBL_MAX;
 				Node nodeMin;
@@ -202,7 +225,7 @@ void TaiaMain::dealWithEvent()
 					}
 				}
 			}
-			else if(_paintingPob)
+			else if (_paintingPob)
 			{
 				double minima = DBL_MAX;
 				Node nodeMin;
@@ -231,15 +254,15 @@ void TaiaMain::dealWithEvent()
 	{
 		if (_event.key.code == sf::Keyboard::Space)
 		{
-			if(!_everOptimized)
+			if (!_everOptimized)
 				initSolutions();
-			_everOptimized=true;
-			_optimizing=!_optimizing;
+			_everOptimized = true;
+			_optimizing = !_optimizing;
 		}
 		if (_event.key.code == sf::Keyboard::B)
 			_drawBG = !_drawBG;
 		if (_event.key.code == sf::Keyboard::P) {
-			if(!_paintingPob)
+			if (!_paintingPob)
 			{
 				int pob;
 				std::cout << "ENTRA LA POBLACIO: " << std::endl;
@@ -299,7 +322,8 @@ void TaiaMain::unserialize()
 			Aresta novaAresta;
 			try {
 				novaAresta.unserialize(tempFinal, &_nodes);
-			}catch(std::exception e)
+			}
+			catch (std::exception e)
 			{
 				continue;
 			}
@@ -326,16 +350,34 @@ void TaiaMain::serialize()
 
 void TaiaMain::mutate()
 {
+	std::vector<Solucio> vectorTempSolucions;
+	for(Solucio& s : _solutions)
+	{
+		if(rand()%100<15)
+		{
+			vectorTempSolucions.push_back(s.mutate());
+		}
+	}
+	_solutions.insert(_solutions.end(),vectorTempSolucions.begin(),vectorTempSolucions.end());
 }
 
 void TaiaMain::fug()
 {
+	std::vector<Solucio> vectorTempSolucions;
+	for(Solucio& s : _solutions)
+	{
+		if(rand()%100<10)
+		{
+			vectorTempSolucions.push_back(s.fug(_solutions[rand()%_solutions.size()]));
+		}
+	}
+	_solutions.insert(_solutions.end(),vectorTempSolucions.begin(),vectorTempSolucions.end());
 }
 
 void TaiaMain::darwin()
 {
-	std::sort(_solutions.begin(),_solutions.end());
-	for(int i = _solutions.size();i > MAX_SOLUTIONS;)
+	std::sort(_solutions.begin(), _solutions.end());
+	for (int i = _solutions.size(); i > MAX_SOLUTIONS;--i)
 	{
 		_solutions.pop_back();
 	}

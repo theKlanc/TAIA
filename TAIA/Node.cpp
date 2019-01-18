@@ -70,9 +70,9 @@ void Node::unserialize(std::string entrada)
 
 	_shape = new sf::CircleShape(4.f);
 	_shape->setPosition(_posX - 2, _posY - 2);
-	int r =0;
+	int r =255;
 	int g =0;
-	int b =255;
+	int b =0;
 	_shape->setFillColor(sf::Color(r, g, b));
 }
 

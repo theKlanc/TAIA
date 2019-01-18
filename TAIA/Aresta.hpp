@@ -12,7 +12,7 @@ public:
 	sf::RectangleShape getShape();
 	bool containsNodeWithUUID(long uuid);
 	std::string serialize();
-	void unserialize(std::string temp,std::map<long,Node> *vNodes);
+	void unserialize(std::string entrada,std::map<long,Node> *vNodes);
 	int getLength();
 	long getDestination();
 	long getOrigin();
