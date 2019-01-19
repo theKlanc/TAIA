@@ -11,6 +11,7 @@ public:
 	Solucio mutate();
 	Solucio fug(Solucio grill);
 	bool operator<(Solucio& l);
+	static bool comparacioSort(Solucio& l,Solucio& r);
 	bool hiHaCarril(int n);
 	static void setup(std::map<long, Node>*n,std::vector<Aresta>*a,int d);
 	

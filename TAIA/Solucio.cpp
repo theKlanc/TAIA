@@ -132,35 +132,17 @@ Solucio Solucio::fug(Solucio grill)
 	{
 		resultat._hiHaCarril[i] = (rand() % 2 == 0 ? *this : grill)._hiHaCarril[i];
 	}
-	while (resultat._dist > resultat._maxDist)
-	{
-		int tramsPlens = 0;
-		for (bool t : resultat._hiHaCarril)
-		{
-			if (!t)
-				tramsPlens++;
-		}
-		int contador = 0;
-		int tramEsborrar = (rand() % tramsPlens) + 1;
-		for (int i = 0; i < resultat._hiHaCarril.size(); i++)
-		{
-			if (resultat._hiHaCarril[i]) {
-				contador++;
-				if (contador == tramEsborrar)
-				{
-					resultat._dist -= (*resultat._arestes)[i].getLength();
-					resultat._hiHaCarril[i] = false;
-					break;
-				}
-			}
-		}
-	}
 	return resultat.reemplenar();
 }
 
-bool Solucio::operator<(Solucio& l)
+bool Solucio::operator<( Solucio& l)
 {
-	return getFitness() > l.getFitness();
+	return getFitness() < l.getFitness();
+}
+
+bool Solucio::comparacioSort( Solucio& l,  Solucio& r)
+{
+	return l.getFitness() > r.getFitness();
 }
 
 bool Solucio::hiHaCarril(int n)
@@ -176,70 +158,6 @@ void Solucio::setup(std::map<long, Node>* n, std::vector<Aresta>* a, int d)
 	_maxDist = 0.3f*d;
 	_path;
 }
-
-//std::pair<int, int> Solucio::getShortestPath(long uuid1, long uuid2) //implementacio basica amb un flood fill
-//{
-//	std::map<long,int> cami;
-//	std::map<long,int> carril;
-//	std::map<long,long> antecessors;
-//	std::map<long,bool> visitats;
-//	std::queue<long> cua;
-//
-//	if(uuid1==uuid2)
-//	{
-//		return std::make_pair(0,0);
-//	}
-//	bool trobat=false;
-//	long nodeActual = uuid1;
-//	do
-//	{
-//		auto temp = getPathsFromNode(nodeActual);
-//		for(auto& aresta : temp)
-//		{
-//			if(visitats.find(aresta->getDestination())!=visitats.end())//si ja l hem visitat
-//			{
-//				//no fer res
-//			}
-//			else
-//			{
-//				int index;
-//				for(int i =0;i<_arestes->size();i++)
-//				{
-//					if((*_arestes)[i].getOrigin()==aresta->getOrigin()&&(*_arestes)[i].getDestination()==aresta->getDestination())
-//					{
-//						index=i;
-//						break;
-//					}
-//				}
-//				cami.insert(std::make_pair(aresta->getDestination(),aresta->getLength()));
-//				carril.insert(std::make_pair(aresta->getDestination(),_hiHaCarril[index]?aresta->getLength():0));
-//				antecessors.insert(std::make_pair(aresta->getDestination(),nodeActual));
-//				visitats.insert(std::make_pair(aresta->getDestination(),true));
-//				cua.push(aresta->getDestination());
-//			}
-//		}
-//		if(cua.empty())
-//		{
-//			continue;
-//		}
-//		nodeActual=cua.front();
-//		if(nodeActual==uuid2){trobat=true;}
-//		cua.pop();
-//	}while(!trobat);
-//	if(!trobat)
-//		throw "ERROR BINCHE BUTO";
-//	int distCami=0;
-//	int distCarril=0;
-//	bool done = false;
-//	long seguent = uuid2;
-//	while(seguent != uuid1)
-//	{
-//		distCami+=cami[seguent];
-//		distCarril+=carril[seguent];
-//		seguent=antecessors[seguent];
-//	}
-//	return std::make_pair(distCami,distCarril);
-//}
 
 std::vector<int> Solucio::getShortestPath(long uuid1, long uuid2)
 {
@@ -277,8 +195,6 @@ std::vector<int> Solucio::getShortestPath(long uuid1, long uuid2)
 						break;
 					}
 				}
-				//cami.insert(std::make_pair(aresta->getDestination(),aresta->getLength()));
-				//carril.insert(std::make_pair(aresta->getDestination(),_hiHaCarril[index]?aresta->getLength():0));
 				antecessors.insert(std::make_pair(aresta->getDestination(), nodeActual));
 				camiPerArribar.insert(std::make_pair(aresta->getDestination(), index));
 				visitats.insert(std::make_pair(aresta->getDestination(), true));
@@ -295,15 +211,11 @@ std::vector<int> Solucio::getShortestPath(long uuid1, long uuid2)
 	} while (!trobat);
 	if (!trobat)
 		throw "ERROR BINCHE BUTO";
-	//int distCami=0;
-	//int distCarril=0;
 	bool done = false;
 	long seguent = uuid2;
 	std::vector<int> resultat;
 	while (seguent != uuid1)
 	{
-		//distCami+=cami[seguent];
-		//distCarril+=carril[seguent];
 		seguent = antecessors[seguent];
 		resultat.push_back(camiPerArribar[seguent]);
 	}
@@ -359,12 +271,11 @@ Solucio Solucio::reemplenar()
 				tramsBuits++;
 		}
 		int contador = 0;
-		int nouTram = (rand() % tramsBuits) + 1;
+		int nouTram = (rand() % tramsBuits);
 		for (int i = 0; i < resultat._hiHaCarril.size(); i++)
 		{
 			if (!resultat._hiHaCarril[i]) {
-				contador++;
-				if (contador == nouTram)
+				if (contador++ == nouTram)
 				{
 					resultat._hiHaCarril[i] = true;
 					resultat._dist += (*resultat._arestes)[i].getLength();
@@ -378,16 +289,15 @@ Solucio Solucio::reemplenar()
 		int tramsPlens = 0;
 		for (bool t : resultat._hiHaCarril)
 		{
-			if (!t)
+			if (t)
 				tramsPlens++;
 		}
 		int contador = 0;
-		int tramEsborrar = (rand() % tramsPlens) + 1;
+		int tramEsborrar = (rand() % tramsPlens);
 		for (int i = 0; i < resultat._hiHaCarril.size(); i++)
 		{
 			if (resultat._hiHaCarril[i]) {
-				contador++;
-				if (contador == tramEsborrar)
+				if (contador++ == tramEsborrar)
 				{
 					resultat._dist -= (*resultat._arestes)[i].getLength();
 					resultat._hiHaCarril[i] = false;

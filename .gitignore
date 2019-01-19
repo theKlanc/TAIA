@@ -267,3 +267,6 @@ __pycache__/
 /TAIA/nodes_test.dat
 /TAIA/arestes_test.dat
 /TAIA/test.png
+/TAIA/arestes_mapa.dat
+/TAIA/mapa.png
+/TAIA/nodes_mapa.dat

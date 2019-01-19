@@ -46,7 +46,7 @@ void TaiaMain::draw()
 	for (int i =0;i<_arestes.size();i++)
 	{
 		auto temp=_arestes[i].getShape();
-		if(_everOptimized && _solutions[0].hiHaCarril(i))
+		if(_everOptimized && _solutions.front().hiHaCarril(i))
 		{
 			int r =0;
 			int g =255;
@@ -55,6 +55,7 @@ void TaiaMain::draw()
 			llistaTemp.push_back(temp);
 			continue;
 		}
+		temp.setFillColor(sf::Color(0,0,0));
 		_window->draw(temp);
 	}
 	for(sf::RectangleShape& r : llistaTemp)
@@ -106,9 +107,9 @@ void TaiaMain::runGeneration()
 {
 	for (int i = 0; i < GENERATIONS_PER_CYCLE; ++i) {
 		mutate();
-		fug();
+		//fug();
 		darwin();
-		std::cout << "finished Gen, best fitness: "<< _solutions[0].getFitness() << " dist :"<< _solutions[0].getDist() <<" Max Dist: "<<_solutions[0].getMaxDist()<< " Ntrams: " <<_solutions[0].getNTrams()<<std::endl;
+		std::cout << "finished Gen, best fitness: "<< _solutions.front().getFitness() << " dist :"<< _solutions.front().getDist() <<" Max Dist: "<<_solutions.front().getMaxDist()<< " Ntrams: " <<_solutions.front().getNTrams()<<std::endl;
 	}
 }
 
@@ -376,9 +377,10 @@ void TaiaMain::fug()
 
 void TaiaMain::darwin()
 {
-	std::sort(_solutions.begin(), _solutions.end());
+	std::sort(_solutions.begin(), _solutions.end(),Solucio::comparacioSort);
 	for (int i = _solutions.size(); i > MAX_SOLUTIONS;--i)
 	{
 		_solutions.pop_back();
 	}
+
 }
