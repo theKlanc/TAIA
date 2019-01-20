@@ -39,7 +39,7 @@ private:
 	int _interes = 0;
 	int _poblacio = 0;
 
-	const int MAX_SOLUTIONS=100;
+	const int MAX_SOLUTIONS=3000;
 
 	void initSolutions();
 
